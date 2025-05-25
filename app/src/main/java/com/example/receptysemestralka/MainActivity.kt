@@ -19,26 +19,37 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ReceptySemestralkaTheme {
-                // Surface so systémovou farbou pozadia
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Column na usporiadanie prvkov vertikálne
                     Column(
                         modifier = Modifier
-                            .fillMaxSize()               // zabere celú plochu obrazovky
-                            .padding(top=50.dp,start = 16.dp, end = 16.dp),             // okraje
-                        horizontalAlignment = Alignment.CenterHorizontally  // vycentrovanie horizontálne
+                            .fillMaxSize()
+                            .padding(top = 40.dp, start = 16.dp, end = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Hlavný nadpis
                         Text(
                             text = "RECEPTY PODĽA MOŽNOSTÍ",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold, // veľkosť písma (môžeš upraviť)
-                            color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.titleLarge  // štýl z témy
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
-                        // Sem neskôr pridáme ďalšie prvky (TextField, tlačidlá...)
+
+                        // Pridať nejaký priestor medzi nadpismi
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Podnadpis
+                        Text(
+                            text = "Zadajte suroviny",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+
+                        // Odtiaľ môžeme pokračovať so zvyškom UI...
                     }
                 }
             }
