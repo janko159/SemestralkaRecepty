@@ -41,7 +41,7 @@ fun HomeScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         // Podnadpis
         Text(
@@ -51,7 +51,7 @@ fun HomeScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Textové pole na zadanie suroviny
         OutlinedTextField(
@@ -90,7 +90,7 @@ fun HomeScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Obal pre zoznam pridaných surovín
         Column(
@@ -122,6 +122,24 @@ fun HomeScreen(
             }
         }
 
-        // Môžeme tu pokračovať s ďalšími prvkami... (Filtrovanie, Vyhľadaj)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Tlačidlo "Vyhľadaj recept"
+        Button(
+            onClick = { /* TODO: spustiť vyhľadávanie receptov */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Text(
+                text = "Vyhľadaj recept",
+                color = MaterialTheme.colorScheme.onPrimary,
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
     }
 }
