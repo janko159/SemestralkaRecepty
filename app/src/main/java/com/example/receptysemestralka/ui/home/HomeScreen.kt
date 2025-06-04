@@ -16,16 +16,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.receptysemestralka.data.RecipeData
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    homeViewModel: HomeViewModel = viewModel()
 ) {
     // Stav pre textové pole "Surovina"
     var ingredient by remember { mutableStateOf("") }
     // Stav pre zoznam surovín
     val ingredientsList = remember { mutableStateListOf<String>() }
+    // Dynamicky filtrované recepty cez ViewModel
+    val filteredRecipes by remember {
+        derivedStateOf { homeViewModel.findRecipesByIngredients(ingredientsList) }
+    }
 
     Column(
         modifier = modifier
@@ -92,7 +98,7 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Obal pre zoznam pridaných surovín
+        // Zobrazenie zoznamu pridaných surovín
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,7 +132,9 @@ fun HomeScreen(
 
         // Tlačidlo "Vyhľadaj recept"
         Button(
-            onClick = { /* TODO: spustiť vyhľadávanie receptov */ },
+            onClick = {
+                // Tu môžeš navigovať, zobraziť výsledky alebo inak spracovať filteredRecipes
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -139,6 +147,37 @@ fun HomeScreen(
                 text = "Vyhľadaj recept",
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = MaterialTheme.typography.labelLarge
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Zobrazenie výsledkov vyhľadávania
+        if (filteredRecipes.isNotEmpty()) {
+            Text(
+                text = "Nájdené recepty: ${filteredRecipes.size}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                filteredRecipes.forEach { recipe ->
+                    Text(
+                        text = recipe.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+            }
+        } else {
+            Text(
+                text = "Žiadne recepty nenájdené",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }

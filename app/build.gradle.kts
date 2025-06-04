@@ -54,7 +54,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.5.0")
     kapt("androidx.room:room-compiler:2.5.0")
     implementation("com.google.code.gson:gson:2.8.9")
-
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
