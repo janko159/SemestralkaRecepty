@@ -8,41 +8,38 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.receptysemestralka.data.RecipeData
 import com.example.receptysemestralka.ui.home.views.HomeViewModel
 
-/**
- * AddRecipeScreen: obrazovka na pridanie nového receptu.
- * Po kliknutí na surovinu v zozname sa daná surovina odstráni.
- */
 @Composable
 fun AddRecipeScreen(
     navController: NavController,
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel
 ) {
-    // Stav pre názov receptu + chyba
-    var recipeName by remember { mutableStateOf(TextFieldValue("")) }
-    var nameError by remember { mutableStateOf(false) }
+    // 1) Ak sa dáta ešte načítavajú, zobrazíme načítavací spinner
+    if (homeViewModel.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
-    // Stav pre aktuálnu surovinu
-    var currentIngredient by remember { mutableStateOf(TextFieldValue("")) }
-    // Stav pre zoznam surovín (využijeme mutableStateListOf)
+    // 2) Stavové premenne pre nové polia
+    var recipeName by remember { mutableStateOf("") }
+    var instructions by remember { mutableStateOf("") }
+    var currentIngredient by remember { mutableStateOf("") }
     val ingredientsList = remember { mutableStateListOf<String>() }
-    var ingredientError by remember { mutableStateOf(false) }
-
-    // Stav pre postup receptu + chyba
-    var instructions by remember { mutableStateOf(TextFieldValue("")) }
-    var instructionsError by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -51,100 +48,82 @@ fun AddRecipeScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
         Text(
-            text = "Pridajte nový recept",
-            fontSize = 26.sp,
-            color = colorScheme.onBackground
+            text = "Pridaj nový recept",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 1) TextField pre názov receptu
+        // 3) Polia na zadanie názvu a postupu
         OutlinedTextField(
             value = recipeName,
-            onValueChange = {
-                recipeName = it
-                if (it.text.trim().isNotEmpty()) nameError = false
-            },
+            onValueChange = { recipeName = it },
             label = { Text("Názov receptu") },
-            placeholder = { Text("Zadajte názov") },
-            singleLine = true,
-            isError = nameError,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-
+            singleLine = true
         )
-        if (nameError) {
-            Text(
-                text = "Názov nemôže byť prázdny",
-                color = colorScheme.error,
-                style = TextStyle(fontSize = 12.sp),
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(start = 8.dp, top = 4.dp)
-            )
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = instructions,
+            onValueChange = { instructions = it },
+            label = { Text("Postup prípravy") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),  // viac riadkov na text
+            singleLine = false
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 2) Riadok s TextField + Button pre pridanie suroviny
-        Row(
+        // 4) Zadanie a pridávanie surovín
+        Text(
+            text = "Pridaj suroviny",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = currentIngredient,
+            onValueChange = { currentIngredient = it },
+            label = { Text("Surovina") },
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                val trimmed = currentIngredient.trim()
+                if (trimmed.isNotEmpty()) {
+                    ingredientsList.add(trimmed)
+                    currentIngredient = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
-            OutlinedTextField(
-                value = currentIngredient,
-                onValueChange = { currentIngredient = it },
-                placeholder = { Text("Nová surovina") },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp),
-
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Button(
-                onClick = {
-                    val ingText = currentIngredient.text.trim()
-                    if (ingText.isNotEmpty()) {
-                        ingredientsList.add(ingText)
-                        currentIngredient = TextFieldValue("")
-                        ingredientError = false
-                    }
-                },
-                modifier = Modifier.height(56.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorScheme.primary
-                )
-            ) {
-                Text(text = "Pridať surovinu", color = colorScheme.onPrimary)
-            }
-        }
-        if (ingredientError) {
-            Text(
-                text = "Pridajte aspoň jednu surovinu",
-                color = colorScheme.error,
-                style = TextStyle(fontSize = 12.sp),
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(start = 8.dp, top = 4.dp)
-            )
+            Text(text = "Pridať surovinu", color = MaterialTheme.colorScheme.onPrimary)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 3) Zoznam pridaných surovín – kliknutie odstráni danú položku
+        // 5) Zoznam pridaných surovín (kliknutím sa odstráni)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 80.dp, max = 200.dp)
+                .height(120.dp)
                 .border(
                     width = 1.dp,
-                    color = colorScheme.onBackground.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(4.dp)
                 )
                 .padding(8.dp)
@@ -153,87 +132,74 @@ fun AddRecipeScreen(
             if (ingredientsList.isEmpty()) {
                 Text(
                     text = "Žiadne suroviny",
-                    color = colorScheme.onBackground.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    style = MaterialTheme.typography.bodyMedium
                 )
             } else {
                 ingredientsList.forEachIndexed { index, item ->
                     Text(
                         text = "${index + 1}. $item",
-                        color = colorScheme.onBackground,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                // Odstránime kliknutú surovinu
-                                ingredientsList.removeAt(index)
-                            }
-                            .padding(vertical = 4.dp)
+                            .clickable { ingredientsList.removeAt(index) }
+                            .padding(vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 4) Multiline TextField pre postup
-        OutlinedTextField(
-            value = instructions,
-            onValueChange = {
-                instructions = it
-                if (it.text.trim().isNotEmpty()) instructionsError = false
-            },
-            label = { Text("Postup") },
-            placeholder = { Text("Popíšte postup prípravy") },
-            isError = instructionsError,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp),
-            shape = RoundedCornerShape(8.dp),
-
-        )
-        if (instructionsError) {
-            Text(
-                text = "Postup nemôže byť prázdny",
-                color = colorScheme.error,
-                style = TextStyle(fontSize = 12.sp),
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(start = 8.dp, top = 4.dp)
-            )
-        }
-
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 5) Tlačidlo Uložiť recept
+        // 6) Tlačidlo “Uložiť” – pridá recept do viewModelu a vráti sa na Home
         Button(
             onClick = {
-                val nameText = recipeName.text.trim()
-                val instText = instructions.text.trim()
-
-                nameError = nameText.isEmpty()
-                ingredientError = ingredientsList.isEmpty()
-                instructionsError = instText.isEmpty()
-
-                if (!nameError && !ingredientError && !instructionsError) {
-                    val newRecipe = RecipeData(
-                        name = nameText,
-                        instructions = instText,
-                        ingredients = ingredientsList.toList()
-                    )
-                    homeViewModel.addRecipe(newRecipe)
-                    navController.popBackStack()
+                // Overenie, že všetky polia sú vyplnené
+                if (recipeName.isBlank()) {
+                    // Môžete použiť napr. Snackbar alebo Toast, ale tu len anulujeme ukladanie
+                    return@Button
                 }
+                if (instructions.isBlank()) {
+                    return@Button
+                }
+                if (ingredientsList.isEmpty()) {
+                    return@Button
+                }
+                // Vytvoríme nový objekt RecipeData
+                val newRecipe = RecipeData(
+                    name = recipeName.trim(),
+                    instructions = instructions.trim(),
+                    ingredients = ingredientsList.toList()
+                )
+                // Uložíme ho do ViewModelu (a do JSON-u v pozadí)
+                homeViewModel.addRecipe(newRecipe)
+
+                // Navigujeme späť na HomeScreen
+                navController.popBackStack()
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = colorScheme.secondary
+                containerColor = MaterialTheme.colorScheme.secondary
             )
         ) {
-            Text(text = "Uložiť recept", color = colorScheme.onSecondary)
+            Text(
+                text = "Uložiť recept",
+                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.labelLarge
+            )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 7) Tlačidlo “Zrušiť” – vráti sa späť bez uloženia
+        TextButton(
+            onClick = { navController.popBackStack() }
+        ) {
+            Text(text = "Zrušiť", color = MaterialTheme.colorScheme.onBackground)
+        }
     }
 }
