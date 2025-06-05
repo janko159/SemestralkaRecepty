@@ -226,15 +226,6 @@ fun AddRecipeScreen(
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 7) Tlačidlo “Zrušiť” – vráti sa späť bez uloženia
-                TextButton(
-                    onClick = { navController.popBackStack() }
-                ) {
-                    Text(text = "Zrušiť", color = MaterialTheme.colorScheme.onBackground)
-                }
             }
         })
 }

@@ -28,10 +28,6 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
     object AddRecipe : Screen("add_recipe")
     object Recipes : Screen("recipes")
-    object Results : Screen("results")
-    object Detail : Screen("detail/{recipeName}") {
-        fun createRoute(recipeName: String) = "detail/$recipeName"
-    }
 }
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +39,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation()
+                    AppNavigation() //navigácia
                 }
             }
         }
@@ -86,25 +82,5 @@ fun AppNavigation() {
                 homeViewModel = homeViewModel
             )
         }
-
-        // Príklad ďalšej cesty (napr. výsledky vyhľadávania) – doplňte podľa potreby
-        composable(Screen.Results.route) {
-            // Tu by ste mohli mať ResultsScreen(homeViewModel) ak existuje
-        }
-
-        // Príklad detailnej obrazovky, ktorá berie argument “recipeName”
-        composable(
-            route = Screen.Detail.route,
-            arguments = listOf(navArgument("recipeName") { type = NavType.StringType })
-        ) { backStackEntry ->
-            // DetailScreen(…) – nakoľko zatiaľ nepotrebujeme, nechávam prázdne
-        }
-    }
-}
-
-@Composable
-fun AppNavigationPreview() {
-    ReceptySemestralkaTheme {
-        AppNavigation()
     }
 }

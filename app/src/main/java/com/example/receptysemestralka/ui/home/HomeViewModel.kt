@@ -1,7 +1,7 @@
+// app/src/main/java/com/example/receptysemestralka/ui/home/views/HomeViewModel.kt
 package com.example.receptysemestralka.ui.home.views
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.receptysemestralka.data.FileStorage
@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import java.text.Normalizer
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -34,13 +33,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             } else {
                 allRecipes = loaded
             }
-
-            // TOTO PRIDAJTE – vyhodnotenie, čo sa skutočne načítalo
-            Log.d("HomeViewModel", ">> allRecipes.size=${allRecipes.size}")
-            allRecipes.forEach { r ->
-                Log.d("HomeViewModel", "  • ${r.name} → ingredients=${r.ingredients}")
-            }
-
             isLoading = false
         }
     }
@@ -49,50 +41,47 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         return listOf(
             RecipeData(
                 name = "Špagety s kyslou smotanou",
-                instructions = "Uvar špagety, zmiešaj kyslú smotanu s cesnakom a korením...",
+                instructions = "Uvar špagety…",
                 ingredients = listOf("špagety", "kyslá smotana", "cesnak", "soľ", "čierne korenie")
             ),
             RecipeData(
                 name = "Ovocný šalát",
-                instructions = "Nakrájaj jablko, hrušku, banán. Zmiešaj ovocie, pokvapkáš citrónom...",
+                instructions = "Nakrájaj jablko…",
                 ingredients = listOf("jablko", "hruška", "banán", "citrónová šťava")
             ),
             RecipeData(
                 name = "Pečené zemiaky",
-                instructions = "Zemiaky umyj, nakrájaj na mesiačiky, pokrop olivovým olejom, osoľ. Peč pri 200 °C 30 minút.",
+                instructions = "Zemiaky umyj…",
                 ingredients = listOf("zemiaky", "olivový olej", "soľ")
-            )
+            ),
+            // … prípadne ďalšie …
         )
     }
 
+    /** Aktualizuje zoznam surovín, podľa ktorých sa budú hľadať recepty */
     fun updateSelectedIngredients(newSelected: List<String>) {
-        // Trim + lowercase, aby sme mali konzistentné porovnanie
-        selectedIngredients = newSelected.map { it.trim().lowercase() }
-    }
-
-    private fun stripDiacritics(input: String): String {
-        val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
-        return normalized.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+        // odstránime prázdne reťazce, pretransformujeme na lowercase
+        selectedIngredients = newSelected.map { it.trim().lowercase() }.filter { it.isNotBlank() }
     }
 
     /**
-     * Upravené filtrovanie: aspoň jedna zo zadaných surovín sa musí nachádzať v recepte.
-     * (Diakritiku ignorujeme.)
+     *  Filtrovanie receptov tak, aby každý výsledný recept obsahoval všetky položky v selectedIngredients.
+     *  T.j. ak zadáte ["soľ", "avokádo"], recept musí obsahovať aj "soľ" aj "avokádo".
      */
     fun findRecipesByIngredients(): List<RecipeData> {
         if (selectedIngredients.isEmpty()) return emptyList()
 
         return allRecipes.filter { recipe ->
-            selectedIngredients.any { siRaw ->
-                val si = stripDiacritics(siRaw)
-                recipe.ingredients.any { ingRaw ->
-                    val ing = stripDiacritics(ingRaw.lowercase())
-                    ing.contains(si)
-                }
+            // Najprv si zoberieme zoznam ingrediencií receptu v lowercase forme
+            val recipeIngsLower = recipe.ingredients.map { it.lowercase() }
+            // Skontrolujeme, či **všetky** vybrané suroviny sú v ingredients receptu
+            selectedIngredients.all { si ->
+                recipeIngsLower.contains(si)
             }
         }
     }
 
+    /** Uloží nový recept do zoznamu a do JSON súboru */
     fun addRecipe(newRecipe: RecipeData) {
         val updated = allRecipes + newRecipe
         allRecipes = updated

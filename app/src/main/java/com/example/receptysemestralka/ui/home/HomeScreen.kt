@@ -5,15 +5,17 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.receptysemestralka.Screen
 import com.example.receptysemestralka.ui.home.views.HomeViewModel
@@ -21,7 +23,7 @@ import com.example.receptysemestralka.ui.home.views.HomeViewModel
 @Composable
 fun HomeScreen(
     navController: NavController,
-    homeViewModel: HomeViewModel   // toto už nie je viewModel() vnútri, ale “pekne” naspäť z MainActivity
+    homeViewModel: HomeViewModel = viewModel()
 ) {
     var ingredient by remember { mutableStateOf("") }
     val ingredientsList = remember { mutableStateListOf<String>() }
@@ -33,20 +35,27 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Hlavný nadpis
         Text(
             text = "RECEPTY PODĽA MOŽNOSTÍ",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            color = colorScheme.onBackground
         )
+
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Podnadpis
         Text(
             text = "Zadajte suroviny",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onBackground
+            color = colorScheme.onBackground
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Textové pole na zadanie suroviny
         OutlinedTextField(
             value = ingredient,
             onValueChange = { ingredient = it },
@@ -57,7 +66,10 @@ fun HomeScreen(
             shape = RoundedCornerShape(8.dp),
             singleLine = true
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Tlačidlo "Pridať" – pridá surovinu do lokálneho zoznamu
         Button(
             onClick = {
                 val trimmed = ingredient.trim().lowercase()
@@ -71,24 +83,26 @@ fun HomeScreen(
                 .height(48.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = colorScheme.primary
             )
         ) {
             Text(
                 text = "Pridať",
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = colorScheme.onPrimary,
                 style = MaterialTheme.typography.labelLarge
             )
         }
+
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Zoznam pridaných surovín (kliknutím sa surovina odstráni)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp)
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    color = colorScheme.onBackground.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(4.dp)
                 )
                 .padding(8.dp)
@@ -97,14 +111,14 @@ fun HomeScreen(
             if (ingredientsList.isEmpty()) {
                 Text(
                     text = "Žiadne suroviny",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    color = colorScheme.onBackground.copy(alpha = 0.5f),
                     style = MaterialTheme.typography.bodyMedium
                 )
             } else {
                 ingredientsList.forEachIndexed { index, item ->
                     Text(
                         text = "${index + 1}. $item",
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = colorScheme.onBackground,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -116,32 +130,35 @@ fun HomeScreen(
                 }
             }
         }
+
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Tlačidlo "Vyhľadaj recept" – uloží suroviny do ViewModelu a naviguje na RecipesScreen
         Button(
             onClick = {
-                // Uložíme si do viewModel.selectedIngredients
+                // 1) Uložíme zoznam pridaných surovín do HomeViewModelu
                 homeViewModel.updateSelectedIngredients(ingredientsList.toList())
-                // Navigujeme na RecipesScreen
-                navController.navigate("recipes")
+                // 2) Navigujeme na RecipesScreen
+                navController.navigate(Screen.Recipes.route)
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = colorScheme.primary
             )
         ) {
             Text(
                 text = "Vyhľadaj recept",
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = colorScheme.onPrimary,
                 style = MaterialTheme.typography.labelLarge
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Tlačidlo "Pridaj recept" – naviguje na AddRecipeScreen (bez vyhľadávania)
         Button(
             onClick = { navController.navigate(Screen.AddRecipe.route) },
             modifier = Modifier
@@ -149,12 +166,12 @@ fun HomeScreen(
                 .height(48.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary
+                containerColor = colorScheme.secondary
             )
         ) {
             Text(
                 text = "Pridaj recept",
-                color = MaterialTheme.colorScheme.onSecondary,
+                color = colorScheme.onSecondary,
                 style = MaterialTheme.typography.labelLarge
             )
         }
