@@ -7,7 +7,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,12 +22,13 @@ import androidx.navigation.NavController
 import com.example.receptysemestralka.data.RecipeData
 import com.example.receptysemestralka.ui.home.views.HomeViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipesScreen(
     navController: NavController,
     homeViewModel: HomeViewModel
 ) {
-    // 1) Čakáme na dokončenie načítania dát
+    // 1) Ak sa dáta ešte načítavajú, zobrazíme načítací spinner
     if (homeViewModel.isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -34,52 +39,80 @@ fun RecipesScreen(
         return
     }
 
-    // 2) Získame filtrované recepty
+    // 2) Získame filtrované recepty podľa vybraných ingrediencií
     val filteredRecipes: List<RecipeData> = homeViewModel.findRecipesByIngredients()
 
-    // 3) Budeme si pamätať, ktorý recept je práve rozbalený (podľa jeho názvu)
+    // 3) Premenná, ktorá bude držať názov práve rozbaleného receptu (null = žiadny)
     var expandedRecipeName by remember { mutableStateOf<String?>(null) }
 
-    if (filteredRecipes.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Žiadne recepty nenájdené",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+    // Ukádame si topBar a zvyšok obsahu do Scaffold, aby sme mohli mať šípku “späť”
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Nájdené recepty",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Späť"
+                        )
+                    }
+                }
             )
         }
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(filteredRecipes) { recipe ->
-                RecipeCardExpandable(
-                    recipe = recipe,
-                    expanded = (recipe.name == expandedRecipeName),
-                    onCardClick = {
-                        expandedRecipeName = if (expandedRecipeName == recipe.name) {
-                            // Ak je už rozbalený, kliknutím ho zbalíme
-                            null
-                        } else {
-                            // Inak rozbalíme práve tento
-                            recipe.name
-                        }
-                    }
+    ) { innerPadding ->
+        // 4) Obsah RecipesScreen – buď hlásenie o nenájdených receptoch, alebo zoznam
+        if (filteredRecipes.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Žiadne recepty nenájdené",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(filteredRecipes) { recipe ->
+                    RecipeCardExpandable(
+                        recipe = recipe,
+                        expanded = (recipe.name == expandedRecipeName),
+                        onCardClick = {
+                            expandedRecipeName = if (expandedRecipeName == recipe.name) {
+                                // Ak už bol rozbalený, kliknutím ho zbalíme
+                                null
+                            } else {
+                                // Inak rozbalíme práve tento recept
+                                recipe.name
+                            }
+                        }
+                    )
+                }
             }
         }
     }
 }
 
+/**
+ * Jedna karta receptu, ktorá vie zobraziť buď iba názov + stručný preview ingrediencií,
+ * alebo (ak je expanded==true) rozbaliť sa a ukázať všetky ingrediencie + postup.
+ */
 @Composable
 private fun RecipeCardExpandable(
     recipe: RecipeData,
@@ -89,8 +122,7 @@ private fun RecipeCardExpandable(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            // Pridáme animateContentSize(), aby sa výška karty plynule menila pri rozbaľovaní
-            .animateContentSize()
+            .animateContentSize()    // plynulý prechod výšky karty pri rozbaľovaní
             .clickable { onCardClick() },
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
@@ -108,7 +140,7 @@ private fun RecipeCardExpandable(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Predbežný preview - prvé 3 ingrediencie
+            // Preview – iba prvé 3 ingrediencie
             val previewIngredients = recipe.ingredients
                 .take(3)
                 .joinToString(", ")
@@ -119,13 +151,13 @@ private fun RecipeCardExpandable(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             )
 
-            // Ak je karta rozbalená, zobrazíme detail (celé ingrediencie + postup)
+            // Ak je karta rozbalená, pridáme sekciu so všetkými ingredienciami + postupom
             if (expanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Nadpis „Všetky suroviny:”
+                // Nadpis pre celý zoznam ingrediencií
                 Text(
                     text = "Všetky suroviny:",
                     style = MaterialTheme.typography.titleSmall,
@@ -133,8 +165,6 @@ private fun RecipeCardExpandable(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // Zoznam všetkých ingrediencií
                 recipe.ingredients.forEach { ing ->
                     Text(
                         text = "- $ing",
@@ -145,7 +175,7 @@ private fun RecipeCardExpandable(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Nadpis „Postup:”
+                // Nadpis pre postup
                 Text(
                     text = "Postup:",
                     style = MaterialTheme.typography.titleSmall,
@@ -153,8 +183,6 @@ private fun RecipeCardExpandable(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // Samotný text postupu
                 Text(
                     text = recipe.instructions,
                     style = MaterialTheme.typography.bodyMedium,
