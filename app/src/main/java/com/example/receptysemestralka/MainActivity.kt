@@ -48,18 +48,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation() {
-    // 1) Vytvoríme si NavController
     val navController = rememberNavController()
 
-    // 2) Vytvoríme JEDINÚ inštanciu HomeViewModel, ktorú budeme zdieľať
     val homeViewModel: HomeViewModel = viewModel()
 
-    // 3) Definujeme NavHost, kde do každej obrazovky odovzdáme rovnaké homeViewModel
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route
     ) {
-        // HomeScreen potrebuje navController aj zdieľaný homeViewModel
         composable(Screen.Home.route) {
             HomeScreen(
                 navController = navController,
@@ -67,7 +63,6 @@ fun AppNavigation() {
             )
         }
 
-        // AddRecipeScreen potrebuje navController aj homeViewModel, aby mohol ukladať nové recepty
         composable(Screen.AddRecipe.route) {
             AddRecipeScreen(
                 navController = navController,
@@ -75,7 +70,6 @@ fun AppNavigation() {
             )
         }
 
-        // RecipesScreen potrebuje len homeViewModel (nemá navController)
         composable(Screen.Recipes.route) {
             RecipesScreen(
                 navController = navController,
