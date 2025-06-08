@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/receptysemestralka/ui/home/RecipesScreen.kt
 package com.example.receptysemestralka.ui.home
 
 import androidx.compose.animation.animateContentSize

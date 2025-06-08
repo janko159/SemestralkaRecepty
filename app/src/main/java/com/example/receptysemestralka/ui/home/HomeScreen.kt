@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/receptysemestralka/ui/home/HomeScreen.kt
 package com.example.receptysemestralka.ui.home
 
 import androidx.compose.foundation.border

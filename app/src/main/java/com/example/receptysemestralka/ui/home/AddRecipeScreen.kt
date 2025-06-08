@@ -31,6 +31,16 @@ fun AddRecipeScreen(
     var recipeName by rememberSaveable { mutableStateOf("") }
     var instructions by rememberSaveable { mutableStateOf("") }
     var currentIngredient by rememberSaveable { mutableStateOf("") }
+    /*
+    * inspirovane internetom
+    * save {it.toList()} -> Compose vezme SnapshotStateList<String> (ingredientsList)
+    * a spraví z neho obyčajný List<String>
+    *
+    * restore ->Keď sa aplikácia obnovuje (napr. po otočení),
+    * Compose dostane späť ten uložený List<String> a cez
+    *  tento blok ho premení späť na sledovateľný SnapshotStateList<String>,
+    *  aby sa opäť správne reagovalo na zmeny v UI
+    * */
     val ingredientsList = rememberSaveable(
         saver = listSaver(
             save = { it.toList() },

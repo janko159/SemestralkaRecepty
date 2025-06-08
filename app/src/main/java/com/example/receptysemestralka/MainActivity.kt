@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/receptysemestralka/MainActivity.kt
 package com.example.receptysemestralka
 
 import android.os.Bundle
@@ -21,16 +20,26 @@ import com.example.receptysemestralka.ui.home.RecipesScreen
 import com.example.receptysemestralka.ui.home.views.HomeViewModel
 import com.example.receptysemestralka.ui.theme.ReceptySemestralkaTheme
 
-/**
- * Obalová trieda pre všetky trasy v aplikácii
- */
+/*
+* objekty pre navigaciu
+* su v sealed class pretoze to je uzavreta trieda ktorej podtriedy mozu byt
+* len tie, ktore su definovane v tom istom subore
+* kompilator vie že sú len tieto screeny v aplikacii
+* */
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object AddRecipe : Screen("add_recipe")
     object Recipes : Screen("recipes")
 }
 
+/*
+* Component Activity zakladna aktivita ktora podporuje compose
+* */
 class MainActivity : ComponentActivity() {
+    /*
+    * tu sa zavedie aktivita nastavia sa zaklady
+    * Cele UI ide cez compose
+    * */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -39,13 +48,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation() //navigácia
+                    AppNavigation()
                 }
             }
         }
     }
 }
-
+/*
+* nastavenie navigacie pri prvom volani default HomeScreen
+* */
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
