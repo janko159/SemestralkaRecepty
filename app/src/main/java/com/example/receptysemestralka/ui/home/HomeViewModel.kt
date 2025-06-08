@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/receptysemestralka/ui/home/views/HomeViewModel.kt
 package com.example.receptysemestralka.ui.home.views
 
 import android.app.Application
@@ -25,7 +24,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val loaded = FileStorage.loadRecipes(getApplication())
+            val loaded = FileStorage.loadRecipes(getApplication()) // getApplication referencia na Context -> citanie z interneho uloziska JSON subor
             if (loaded.isEmpty()) {
                 val sample = createSampleRecipes()
                 FileStorage.saveRecipes(getApplication(), sample)
@@ -54,34 +53,25 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 instructions = "Zemiaky umyj…",
                 ingredients = listOf("zemiaky", "olivový olej", "soľ")
             ),
-            // … prípadne ďalšie …
+
         )
     }
 
-    /** Aktualizuje zoznam surovín, podľa ktorých sa budú hľadať recepty */
     fun updateSelectedIngredients(newSelected: List<String>) {
-        // odstránime prázdne reťazce, pretransformujeme na lowercase
         selectedIngredients = newSelected.map { it.trim().lowercase() }.filter { it.isNotBlank() }
     }
 
-    /**
-     *  Filtrovanie receptov tak, aby každý výsledný recept obsahoval všetky položky v selectedIngredients.
-     *  T.j. ak zadáte ["soľ", "avokádo"], recept musí obsahovať aj "soľ" aj "avokádo".
-     */
     fun findRecipesByIngredients(): List<RecipeData> {
         if (selectedIngredients.isEmpty()) return emptyList()
 
         return allRecipes.filter { recipe ->
-            // Najprv si zoberieme zoznam ingrediencií receptu v lowercase forme
             val recipeIngsLower = recipe.ingredients.map { it.lowercase() }
-            // Skontrolujeme, či **všetky** vybrané suroviny sú v ingredients receptu
             selectedIngredients.all { si ->
                 recipeIngsLower.contains(si)
             }
         }
     }
 
-    /** Uloží nový recept do zoznamu a do JSON súboru */
     fun addRecipe(newRecipe: RecipeData) {
         val updated = allRecipes + newRecipe
         allRecipes = updated

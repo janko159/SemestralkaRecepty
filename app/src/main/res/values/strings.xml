@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">ReceptySemestralka</string>
+    <string name="home_title">RECEPTY PODĽA MOŽNOSTÍ</string>
+    <string name="enter_ingredient">Zadajte suroviny</string>
+    <string name="add_button">Pridať</string>
+    <string name="search_button">Vyhľadaj recept</string>
+    <string name="add_recipe_button">Pridaj recept</string>
+
+    <string name="add_recipe_title">Pridaj nový recept</string>
+    <string name="label_recipe_name">Názov receptu</string>
+    <string name="label_instructions">Postup prípravy</string>
+    <string name="section_add_ingredients">Pridaj suroviny</string>
+    <string name="add_ingredient_button">Pridať surovinu</string>
+    <string name="no_ingredients">Žiadne suroviny</string>
+    <string name="save_recipe_button">Uložiť recept</string>
+    <string name="cancel_button">Zrušiť</string>
+
+    <string name="recipes_screen_title">Nájdené recepty</string>
+    <string name="no_recipes_found">Žiadne recepty nenájdené</string>
+    <string name="label_all_ingredients">Všetky suroviny:</string>
+    <string name="label_instructionss">Postup:</string>
 </resources>
